@@ -16,11 +16,15 @@ async function createHtml() {
             headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)" }
         });
         const $ = cheerio.load(data);
+
         
         let listItemsHtml = "";
         $("a[href*='eksiseyler.com/']").each((i, el) => {
             const link = $(el).attr("href");
             const title = $(el).find(".hero-headline").text().trim() || $(el).find("img").attr("alt") || "Başlıksız";
+
+
+
             
             if (link && title !== "Başlıksız") {
                 listItemsHtml += `
@@ -86,12 +90,18 @@ app.get("/veriseyler.html", (req, res) => {
 app.post("/save-links", async (req, res) => {
     const { links } = req.body;
     
-    let combinedHtml = `<!DOCTYPE html><html><head><meta charset='UTF-8'><title>Okunan Şeyler</title>
+    let combinedHtml = `<!DOCTYPE html><html><head><meta charset='UTF-8' name="referrer" content="no-referrer"><title>Okunan Şeyler</title>
     <style>
         body { background-color: #1a1a1a; color: #ccc; font-family: sans-serif; padding: 50px; line-height: 1.6; }
-        .content-main { max-width: 850px; margin: 0 auto; background: #222; padding: 30px; border-radius: 10px; margin-bottom: 50px; }
-        .content { font-size: 22px; transition: font-size 0.2s; }
-        img { max-width: 100%; border-radius: 5px; margin: 15px 0; }
+        .content-main { max-width: 850px; margin: 0 auto;  background: #222; padding: 30px; border-radius: 10px; margin-bottom: 50px; }
+        .content { font-size: 22px; transition: font-size 0.2s; margin-right: 50%;}
+        img {
+  max-width: 100%;
+  display: block;
+  margin: 15px auto;
+  border-radius: 5px;
+}
+
         h1 { color: #17FF00; text-align: center; }
         a { color: #17FF00; }
         hr { border: 0; height: 1px; background: #444; margin: 60px 0; }
@@ -107,7 +117,24 @@ app.post("/save-links", async (req, res) => {
             const $ = cheerio.load(data);
             
             const title = $("h1").text().trim();
+// İçeriği seç ve üzerinde işlem yapmak için bir değişkene ata
+const contentElement = $(".content-main");
+
+// RESİM DÜZELTME BURADA YAPILMALI
+contentElement.find("img").each((i, img) => {
+    const realSrc = $(img).attr("data-src");
+    if (realSrc) {
+        $(img).attr("src", realSrc); // Placeholder yerine gerçeği koy
+        $(img).removeAttr("data-src"); // Temizlik
+    }
+    $(img).css("opacity", "1"); // Görünür yap
+});
+
+
+
             const content = $(".content-main").html();
+
+
 
             if (content) {
                 combinedHtml += `
@@ -125,7 +152,7 @@ app.post("/save-links", async (req, res) => {
     // Senin Özel Panel Scriptin (Kumanda)
     combinedHtml += `
     <script>
-   var punto = 60;
+   var punto = 40;
     var scrl = 2;
     var artis = 3;
     var ilk_bas = false;
